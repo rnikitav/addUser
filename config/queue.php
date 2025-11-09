@@ -88,6 +88,13 @@ return [
                 'deferred',
             ],
         ],
+        'balance' => [
+            'driver' => 'redis',
+            'connection' => 'default',
+            'queue' => 'balance',
+            'retry_after' => 120,
+            'block_for' => null,
+        ],
 
     ],
 

@@ -2,47 +2,67 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Balance\UserBalance;
+use App\Models\Balance\UserBalanceTransaction;
+use App\Observers\UserObserver;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Collection;
+use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property integer id
+ * @property string login
+ * @property string email
+ * @property string password
+ * @property string remember_token
+ * @property Carbon email_verified_at
+ * @property Carbon created_at
+ * @property Carbon updated_at
+ * @property Carbon deleted_at
+ *
+ * @property UserBalance balance
+ * @property Collection<UserBalanceTransaction> balanceTransactions
+ */
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    use SoftDeletes;
+    use HasApiTokens;
+    
     protected $fillable = [
-        'name',
+        'login',
         'email',
         'password',
     ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
+    
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'id'                => 'integer',
+        'login'              => 'string',
+        'email'             => 'string',
+        'remember_token'    => 'string',
+        'password'          => 'hashed'
+    ];
+
+
+    protected static function booted(): void
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        self::observe(UserObserver::class);
+    }
+
+    public function balance(): HasOne
+    {
+        return $this->hasOne(UserBalance::class);
+    }
+    public function balanceTransactions(): HasMany
+    {
+        return $this->hasMany(UserBalanceTransaction::class);
     }
 }

@@ -1,0 +1,88 @@
+services:
+
+  # PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: app_test
+    restart: unless-stopped
+    tty: true
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./docker/php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+    environment:
+      PHP_IDE_CONFIG: "serverName=usertest"
+    networks:
+      - app-network
+    depends_on:
+      - db
+      - redis
+
+  # Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: webserver_test
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "44488:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/conf/:/etc/nginx/conf.d/
+    networks:
+      - app-network
+    depends_on:
+      - app
+
+  #MySQL Service
+  db:
+    image: mysql:8.0
+    container_name: db_test
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "33061:3306"
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - dbdata:/var/lib/mysql/
+      - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - app-network
+  redis:
+    image: redis:alpine
+    container_name: redis_test
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - app-network
+
+  vue:
+    build:
+      context: .
+      dockerfile: docker/vue/Dockerfile
+    container_name: vue_test
+    ports:
+      - "51733:5173"
+    volumes:
+      - ./frontend:/var/www
+      - /var/www/node_modules
+    networks:
+      - app-network
+
+# Networks
+networks:
+  app-network:
+    driver: bridge
+
+# Volumes
+volumes:
+  dbdata:
+    driver: local
+  redisdata:
+    driver: local
