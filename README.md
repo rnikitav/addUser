@@ -29,7 +29,7 @@ docker compose build
 docker compose up -d
 
 # Запуск queue worker
-docker compose exec -d app php artisan queue:work redis --queue=balance
+docker compose exec -it app php artisan queue:work redis --queue=balance
 ```
 
 ---
@@ -48,10 +48,10 @@ docker compose exec -d app php artisan queue:work redis --queue=balance
 ## CLI Команды
 ```bash
 # Добавить пользователя
-docker compose exec app php artisan user:add "Name"
+docker compose exec -it app php artisan user:add "Name"
 
 # Управление балансом
-docker compose exec app php artisan balance-transaction:add "Name"
+docker compose exec -it app php artisan balance-transaction:add "Name"
 
 # Просмотр логов
 docker compose logs -f app
@@ -78,8 +78,8 @@ Accept: application/json
 docker compose exec app chmod -R 775 storage bootstrap/cache
 
 # Очистка кэша
-docker compose exec app php artisan cache:clear
-docker compose exec app php artisan config:clear
+docker compose exec -it app  php artisan cache:clear
+docker compose exec -it app  php artisan config:clear
 
 # Пересборка контейнеров
 docker compose down
