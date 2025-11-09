@@ -61,5 +61,12 @@ USER www
 # Открываем порт php-fpm
 EXPOSE 9000
 
+# Копируем entrypoint в /var/www
+USER root
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+USER www
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
 # Старт PHP-FPM
 CMD ["php-fpm"]
